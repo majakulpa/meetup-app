@@ -1,0 +1,19 @@
+{
+  "name": "meetup-app",
+  "version": "1.0.0",
+  "description": "meetup app node.js graphql, mongodb, react",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app.js"
+  },
+  "author": "Maja Kulpa-Malecka",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.4"
+  }
+}
