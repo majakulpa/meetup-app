@@ -13,7 +13,7 @@ const eventSchema = new Schema({
   },
   price: {
     type: Number,
-    default: 0
+    default: 0.0
   },
   date: {
     type: Date,
@@ -22,9 +22,11 @@ const eventSchema = new Schema({
   capacity: {
     type: Number,
     required: true
+  },
+  creator: {
+    type: Schema.Types.ObjectId,
+    ref: 'User'
   }
 })
 
-const Event = mongoose.model('Event', eventSchema)
-
-module.exports = Event
+module.exports = mongoose.model('Event', eventSchema)
