@@ -15,7 +15,6 @@ const userSchema = new Schema({
     type: String,
     required: true
   },
-  mobileNr: Number,
   about: String,
   interests: [String],
   createdEvents: [

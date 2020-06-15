@@ -22,7 +22,6 @@ module.exports = buildSchema(`
     name: String!
     email: String!
     password: String
-    mobileNr: Int
     about: String
     interests: [String]
     createdEvents: [Event!]
@@ -31,7 +30,6 @@ module.exports = buildSchema(`
     name: String!
     email: String!
     password: String!
-    mobileNr: Int
     about: String
     interests: [String]
   }
