@@ -3,38 +3,3 @@
   max-width: 80%;
   margin: 5rem auto;
 }
-
-.form-control label,
-.form-control input {
-  width: 100%;
-  display: block;
-}
-
-.form-control label {
-  margin-bottom: 0.5rem;
-}
-
-.form-control {
-  margin-bottom: 1rem;
-}
-
-.form-actions button {
-  background: #01d1d1;
-  font: inherit;
-  border: none;
-  color: #fff;
-  border-radius: 3px;
-  padding: 0.5rem 1rem;
-  margin-right: 1rem;
-  cursor: pointer;
-  transition: 0.2s all ease-in-out;
-}
-
-.form-actions button:hover,
-.form-actions button:active {
-  background: #03a0a0;
-}
-
-.form-actions button:focus {
-  outline: none;
-}

@@ -8,6 +8,7 @@
   padding: 0 1rem;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   color: #fff;
 }
 
@@ -24,21 +25,36 @@
   list-style: none;
   display: flex;
   padding: 0;
-  margin: 0;
+  margin: 0 1rem;
+  align-items: center;
 }
 
 .main-navigation__items li {
   margin: 0 1rem;
 }
 
-.main-navigation__items a {
+.main-navigation__items a,
+.main-navigation__items button {
   text-decoration: none;
   color: #fff;
   transition: 0.2s all ease-in-out;
 }
 
+.main-navigation__items button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: inherit;
+}
+
 .main-navigation__items a:hover,
+.main-navigation__items button:hover,
 .main-navigation__items a:active,
+.main-navigation__items button:active,
 .main-navigation__items a.active {
   border-bottom: 2px solid white;
+}
+
+.main-navigation__items button:focus {
+  outline: none;
 }
