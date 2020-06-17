@@ -1,12 +1,20 @@
 import React, { Component } from 'react'
 import Modal from './../components/Modal/Modal'
 import Backdrop from './../components/Backdrop/Backdrop'
+import AuthContext from './../context/auth-context'
+import EventList from './../components/Events/EventList/EventList'
+import Spinner from './../components/Spinner/Spinner'
 import './Event.css'
 
 class Events extends Component {
   state = {
-    creating: false
+    creating: false,
+    events: [],
+    isLoading: false,
+    selectedEvent: null
   }
+
+  static contextType = AuthContext
 
   constructor(props) {
     super(props)
@@ -17,6 +25,10 @@ class Events extends Component {
     this.capacityElRef = React.createRef()
   }
 
+  componentDidMount() {
+    this.fetchEvents()
+  }
+
   startCreateEventHandler = () => {
     this.setState({ creating: true })
   }
@@ -24,27 +36,133 @@ class Events extends Component {
   modalConfirmHandler = () => {
     this.setState({ creating: false })
     const title = this.titleElRef.current.value
-    const price = this.priceElRef.current.value
+    const price = +this.priceElRef.current.value
     const date = this.dateElRef.current.value
     const description = this.descriptionElRef.current.value
-    const capacity = this.capacityElRef.current.value
+    const capacity = +this.capacityElRef.current.value
 
-    if (!title || !price || !date || !description || !capacity) {
+    if (!title || price < 0 || !date || !description || capacity < 0) {
       return
     }
 
     const event = { title, price, date, description, capacity }
     console.log(event)
+
+    const requestBody = {
+      query: `
+          mutation {
+            createEvent(eventInput: {title: "${title}", price: ${price}, date: "${date}", description: "${description}", capacity: ${capacity}}) {
+              _id
+              title
+              description
+              date
+              capacity
+              price
+            }
+          }
+        `
+    }
+
+    const token = this.context.token
+
+    fetch('http://localhost:8000/graphql', {
+      method: 'POST',
+      body: JSON.stringify(requestBody),
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + token
+      }
+    })
+      .then(res => {
+        if (res.status !== 200 && res.status !== 201) {
+          throw new Error('Failed!')
+        }
+        return res.json()
+      })
+      .then(resData => {
+        this.setState(prevState => {
+          const updatedEvents = [...prevState.events]
+          updatedEvents.push({
+            _id: resData.data.createEvent._id,
+            title: resData.data.createEvent.title,
+            description: resData.data.createEvent.description,
+            date: resData.data.createEvent.date,
+            capacity: resData.data.createEvent.capacity,
+            price: resData.data.createEvent.price,
+            creator: {
+              _id: this.context.userId
+            }
+          })
+          return { events: updatedEvents }
+        })
+      })
+      .catch(err => {
+        console.log(err)
+      })
   }
 
   modalCancelHandler = () => {
-    this.setState({ creating: false })
+    this.setState({ creating: false, selectedEvent: null })
   }
+
+  fetchEvents() {
+    this.setState({ isLoading: true })
+    const requestBody = {
+      query: `
+          query {
+            events {
+              _id
+              title
+              description
+              date
+              capacity
+              price
+              creator {
+                _id
+                name
+                email
+              }
+            }
+          }
+        `
+    }
+
+    fetch('http://localhost:8000/graphql', {
+      method: 'POST',
+      body: JSON.stringify(requestBody),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+      .then(res => {
+        if (res.status !== 200 && res.status !== 201) {
+          throw new Error('Failed!')
+        }
+        return res.json()
+      })
+      .then(resData => {
+        const events = resData.data.events
+        this.setState({ events: events, isLoading: false })
+      })
+      .catch(err => {
+        console.log(err)
+        this.setState({ isLoading: false })
+      })
+  }
+
+  showDetailHandler = eventId => {
+    this.setState(prevState => {
+      const selectedEvent = prevState.events.find(e => e._id === eventId)
+      return { selectedEvent: selectedEvent }
+    })
+  }
+
+  bookEventHandler = () => {}
 
   render() {
     return (
       <React.Fragment>
-        {this.state.creating && <Backdrop />}
+        {(this.state.creating || this.state.selectedEvent) && <Backdrop />}
         {this.state.creating && (
           <Modal
             title="Add Event"
@@ -52,6 +170,7 @@ class Events extends Component {
             canConfrim
             onCancel={this.modalCancelHandler}
             onConfirm={this.modalConfirmHandler}
+            confirmText="Confirm"
           >
             <form>
               <div className="form-control">
@@ -63,8 +182,8 @@ class Events extends Component {
                 <input type="number" id="price" ref={this.priceElRef} />
               </div>
               <div className="form-control">
-                <label htmlFor="date">Date</label>
-                <input type="date" id="date" ref={this.dateElRef} />
+                <label htmlFor="date">Date and Time</label>
+                <input type="datetime-local" id="date" ref={this.dateElRef} />
               </div>
               <div className="form-control">
                 <label htmlFor="description">Description</label>
@@ -81,12 +200,42 @@ class Events extends Component {
             </form>
           </Modal>
         )}
-        <div className="events-control">
-          <h3>Create your own event!</h3>
-          <button className="btn" onClick={this.startCreateEventHandler}>
-            Create Event
-          </button>
-        </div>
+        {this.state.selectedEvent && (
+          <Modal
+            title={this.state.selectedEvent.title}
+            canCancel
+            canConfrim
+            onCancel={this.modalCancelHandler}
+            onConfirm={this.bookEventHandler}
+            confirmText="Book"
+          >
+            <h2>{this.state.selectedEvent.title}</h2>
+            <h3>
+              ${this.state.selectedEvent.price} -{' '}
+              {new Date(this.state.selectedEvent.date).toLocaleDateString()}
+            </h3>
+            <p>{this.state.selectedEvent.description}</p>
+            <p>Max capacity: {this.state.selectedEvent.capacity}</p>
+            <p>Organizer: {this.state.selectedEvent.creator.name}</p>
+          </Modal>
+        )}
+        {this.context.token && (
+          <div className="events-control">
+            <h3>Create your own event!</h3>
+            <button className="btn" onClick={this.startCreateEventHandler}>
+              Create Event
+            </button>
+          </div>
+        )}
+        {this.state.isLoading ? (
+          <Spinner />
+        ) : (
+          <EventList
+            events={this.state.events}
+            authUserId={this.context.userId}
+            onViewDetail={this.showDetailHandler}
+          />
+        )}
       </React.Fragment>
     )
   }

@@ -12,9 +12,9 @@ module.exports = buildSchema(`
     _id: ID!
     title: String!
     description: String!
-    price: Float
+    price: Float!
     date: String!
-    capacity: Int
+    capacity: Int!
     creator: User!
   }
   type User {
@@ -41,9 +41,9 @@ module.exports = buildSchema(`
   input EventInput {
     title: String!
     description: String!
-    price: Float
+    price: Float!
     date: String!
-    capacity: Int
+    capacity: Int!
   }
   type RootQuery {
     events: [Event!]!

@@ -39,6 +39,7 @@ const user = async userId => {
 const transformEvent = event => {
   return {
     ...event._doc,
+    _id: event.id,
     date: dateToString(event._doc.date),
     creator: user.bind(this, event.creator)
   }
@@ -47,6 +48,7 @@ const transformEvent = event => {
 const transformBooking = booking => {
   return {
     ...booking._doc,
+    _id: booking.id,
     user: user.bind(this, booking._doc.user),
     event: singleEvent.bind(this, booking._doc.event),
     createdAt: dateToString(booking._doc.createdAt),
